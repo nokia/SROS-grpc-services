@@ -1,10 +1,10 @@
 
 This is a prototype state, short term TODO to move close to BETA:
-PEP8 compliance - unify code.
-pylint compliance
-Documentation
-Support for python3.7+
-Unit tests for linux, macOS and linux
+- PEP8 compliance - unify code.
+- pylint compliance
+- Documentation
+- Support for python3.7+
+- Unit tests for linux, macOS and linux
 
 Initial version was tested on Centos 7.
 
