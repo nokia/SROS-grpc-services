@@ -1,0 +1,177 @@
+// Copyright (c) 2018 Nokia
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+package Nokia.SROS;
+
+extend google.protobuf.FileOptions {
+  optional string rib_api_service = 10001;
+}
+
+option (rib_api_service) = "0.4.0"; // RibApi service version, returned through the GetVersion RPC
+
+service RibApi {
+  rpc Modify(stream ModifyRequest) returns (stream ModifyResponse);
+  rpc GetVersion(VersionRequest) returns (VersionResponse);
+}
+
+message ModifyRequest {
+  repeated Request request = 1;
+
+  message Request {
+    optional uint64 id = 1;
+
+    oneof data {
+      EndOfRib                 END_OF_RIB = 2;
+
+      RouteTableEntry          ipv4_route_ADD = 3;
+      RouteTableEntry          ipv4_route_REPLACE = 4;
+      RouteTableEntryKey       ipv4_route_DELETE = 5;
+
+      RouteTableEntry          ipv6_route_ADD = 6;
+      RouteTableEntry          ipv6_route_REPLACE = 7;
+      RouteTableEntryKey       ipv6_route_DELETE = 8;
+
+      TunnelTableEntry         ipv4_tunnel_ADD = 9;
+      TunnelTableEntry         ipv4_tunnel_REPLACE = 10;
+      TunnelTableEntryKey      ipv4_tunnel_DELETE = 11;
+
+      TunnelTableEntry         ipv6_tunnel_ADD = 12;
+      TunnelTableEntry         ipv6_tunnel_REPLACE = 13;
+      TunnelTableEntryKey      ipv6_tunnel_DELETE = 14;
+
+      LabelTableEntry          mpls_label_ADD = 15;
+      LabelTableEntry          mpls_label_REPLACE = 16;
+      LabelTableEntryKey       mpls_label_DELETE = 17;
+
+      NextHopSwitch            NH_SWITCH = 18;
+    }
+  }
+}
+
+message ModifyResponse {
+  repeated Result result = 1;
+
+  message Result {
+    optional uint64 id = 1;
+
+    enum Status {
+      UNSET = 0;
+      OK = 1;
+      FAILED = 2;
+    }
+    optional Status status = 2;
+    optional string extended_status = 3; // Extended failure information could be returned here per table/use case
+  }
+}
+
+message VersionRequest {
+}
+
+message VersionResponse {
+  optional string api_version = 1;
+  repeated Table operational_tables = 2;
+
+  message Table {
+    optional TableId id = 1;
+    optional string  version = 2;
+  }
+}
+
+////////////////////////// End of RIB //////////////////////////
+enum TableId {
+  INVALID           = 0;
+  IPv4RouteTable    = 1;
+  IPv6RouteTable    = 2;
+  IPv4TunnelTable   = 3;
+  IPv6TunnelTable   = 4;
+  MplsLabelTable    = 5;
+}
+
+message EndOfRib {
+  optional TableId id = 1;
+}
+
+////////////////////////// Next-Hop Switch //////////////////////////
+message NextHopSwitch {
+  oneof key {
+    string endpoint = 1;                     // Ipv4 or Ipv6 address
+    uint32 label = 2;                        // Mpls label
+  }
+  optional uint32 preference = 3;            // Key; this is ordering preference for
+                                             // multiple tunnel or label entries to
+                                             // the same endpoint or label
+  optional uint32 nh_group_id = 4;           // Index for nexthop group
+  optional Type type = 5;
+
+  enum Type {
+    INVALID = 0;
+    Primary = 1;
+    Backup  = 2;
+  }
+}
+
+////////////////////////// Route Table //////////////////////////
+message RouteTableEntryKey {
+  optional string prefix = 1;                // Key; IP prefix and prefix length in CIDR
+                                             // format
+  optional uint32 preference = 2;            // Key; this is ordering preference for
+                                             // multiple routes with same prefix for
+                                             // ordering within the RIB-API module
+}
+message RouteTableEntry {
+  optional RouteTableEntryKey entry_key = 1; // Route entry key
+  optional uint32 rtm_preference = 2;        // This is preference to use when installing
+                                             // in RTM; valid values are 0 - 255 (byte)
+  optional uint32 metric = 3;                // Configured tunnel metric to use
+  optional string tunnel_next_hop = 4;       // Tunnel destination IP address
+}
+
+////////////////////////// Tunnel Table //////////////////////////
+message NextHopGroup {
+  optional uint32 id = 1;                    // Key; index for nexthop groups
+  optional uint32 weight = 2;                // This is used for weighted ECMP among different nexthop
+                                             // groups
+                                             // Optional if there is only one nexthop group
+  optional NextHop primary = 3;              // Primary nexthop attributes
+  optional NextHop backup = 4;               // Backup nexthop attributes
+}
+
+message NextHop {
+  optional string ip_address = 1;            // Ipv4 or Ipv6 address
+  repeated uint32 pushed_label_stack = 2;    // Maximum of 11 labels can be pushed
+}
+
+message TunnelTableEntryKey {
+  optional string endpoint = 1;              // Key; Ipv4 or Ipv6 address
+  optional uint32 preference = 2;            // Key; this is ordering preference for
+                                             // multiple tunnel entries to the same endpoint for
+                                             // ordering within the RIB-API module
+}
+message TunnelTableEntry {
+  optional TunnelTableEntryKey entry_key = 1; // Key;
+  optional uint32 ttm_preference = 2;         // TTM preference gets programmed in tunnel table
+                                              // Suggested value is 1; valid values are 0 - 255 (byte)
+  optional uint32 metric = 3;                 // Metric gets programmed in TTM
+                                              // Used as a tie-breaker between duplicate entries
+  repeated NextHopGroup groups = 4;           // Maximum of 32 nexthop groups
+}
+
+////////////////////////// Label Table //////////////////////////
+message LabelTableEntryKey {
+  optional uint32 label = 1;                  // Key;
+  optional uint32 preference = 2;             // Key; Used as a tie-breaker to select among
+                                              // label table entries for the same label
+}
+message LabelTableIngrStats {
+  optional bool enable = 1;                   // Enables the collection of ingress stats
+                                              // for this label table entry
+}
+message LabelTableEntry {
+  optional LabelTableEntryKey entry_key = 1;  // Key;
+  repeated NextHopGroup groups = 2;           // Optional - If the field is specified indicates a SWAP
+                                              // operation in HW, else it is POP
+  optional LabelTableIngrStats ing_stats = 3; // Ingress stats attributes
+}
