@@ -22,6 +22,10 @@ from google.protobuf import json_format
 
 from collections import OrderedDict
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 def create_stub(service=None, channel=None):
     return rib_stub.RibApiStub(channel)
 
@@ -69,7 +73,7 @@ class GetVersion(Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method.future(self.generator(), 
                                                    metadata = self.metadata,
-                                                   timeout = self.timeout)
+                                                   timeout = self._timeout)
         self.response_processor(self.rpc_handler.result())
         self.status = 'finished'
         self.work_queue.task_done()
@@ -116,19 +120,30 @@ class Modify(Rpc):
 
     def __str__(self):
         display = 'Modify - {name}\n'.format(name=self.name)
-        if not self.processed_request:
+        if not self.processed_request and not self.request:
             display += '    No requests or responses are currently tracked\n'
         else:
-            for pair_id in self.processed_request:
-                display += ('======= id: {id} =======\n'
-                            '==request {id}:\n'
-                            '{req}\n\n'
-                            '==response {id}:\n'
-                            '{res}\n\n'
-                            '======= id: {id} =======\n').format(
-                                id = pair_id,
-                                req = self.processed_request[pair_id]['request'],
-                                res = self.processed_request[pair_id]['response'])
+            if self.request:
+                display += "\nUNPROCESSED REQUESTS:\n"
+                for req in self.request:
+                    display += ('\n======= id: {id} =======\n'
+                                '==request {id}:\n'
+                                '{req}\n').format(
+                                    id = req,
+                                    req = self.request[req])
+
+            if self.processed_request:
+                display += "\nPROCESSED REQUESTS:\n"
+                for pair_id in self.processed_request:
+                    display += ('\n======= id: {id} =======\n'
+                                '==request {id}:\n'
+                                '{req}\n'
+                                '==response {id}:\n'
+                                '{res}\n').format(
+                                    id = pair_id,
+                                    req = self.processed_request[pair_id]['request'],
+                                    res = self.processed_request[pair_id]['response'])
+
         display += '\nError:\n{err}'.format(err = self.error)
         return display
 
@@ -157,7 +172,7 @@ class Modify(Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method(self.generator(),
                                             metadata = self.metadata,
-                                            timeout = self.timeout)
+                                            timeout = self._timeout)
         for msg in self.rpc_handler:
             self.response_processor(msg)
             self.status = 'waiting'
@@ -166,7 +181,7 @@ class Modify(Rpc):
 
     def default_response_processor(self, response = None):
         for result in response.result:
-            self.processed_request[result.id]['response'] = response
+            self.processed_request[result.id]['response'] = result
 
 
     def clear(self, request=True, response=True, error=True):
@@ -347,6 +362,8 @@ class Modify(Rpc):
         if json:
             msg = json_format.Parse(json, rib.ModifyRequest.Request())
         else:
+            if id == None:
+                id = self.request_id()
             if operation in ['add', 'replace']:
                 table_entry = rib.TunnelTableEntry(
                                 entry_key = rib.TunnelTableEntryKey(

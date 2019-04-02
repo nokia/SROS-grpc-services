@@ -19,6 +19,11 @@ import grpc_lib
 from protos_gen import gnmi_pb2 as gnmi
 from protos_gen import gnmi_pb2_grpc as gnmi_stub
 
+try:
+    from itertools import zip_longest as zip_longest
+except:
+    from itertools import izip_longest as zip_longest
+
 from collections import OrderedDict
 import json
 import socket
@@ -149,7 +154,7 @@ class Capabilities(grpc_lib.Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method.future(self.generator(), 
                                                    metadata = self.metadata,
-                                                   timeout = self.timeout)
+                                                   timeout = self._timeout)
         self.response_processor(self.rpc_handler.result())
         self.status = 'finished'
         self.work_queue.task_done()
@@ -212,7 +217,7 @@ class Get(grpc_lib.Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method.future(self.generator(),
                                                    metadata = self.metadata,
-                                                   timeout = self.timeout)
+                                                   timeout = self._timeout)
         self.response_processor(self.rpc_handler.result())
         self.status = 'finished'
         self.work_queue.task_done()
@@ -248,6 +253,11 @@ class Get(grpc_lib.Rpc):
     def encoding(self, encoding=None):
         self._encoding = encoding
 
+    def use_models(self, name=None, organization=None, version=None):
+        self._use_models.append(gnmi.ModelData(name=name,
+                                               organization=organization,
+                                               version=version))
+
     # TODO: convenience functions for storing data in manner feedable to set
     # set RPCs
 
@@ -258,14 +268,14 @@ class Set(grpc_lib.Rpc):
         grpc_lib.Rpc.__init__(self, *args, **kwargs)
 
         self.processed_request = {}
-        self.stub_method = self.stub.Get
+        self.stub_method = self.stub.Set
 
         self.response_processor = self.default_response_processor
 
         self._prefix = None
-        self._update = None
-        self._delete = None
-        self._replace = None
+        self._update = []
+        self._delete = []
+        self._replace = []
 
         self.response = None
 
@@ -295,7 +305,7 @@ class Set(grpc_lib.Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method.future(self.generator(),
                                                    metadata = self.metadata,
-                                                   timeout = self.timeout)
+                                                   timeout = self._timeout)
         self.response_processor(self.rpc_handler.result())
         self.status = 'finished'
         self.work_queue.task_done()
@@ -368,6 +378,8 @@ class Subscribe(grpc_lib.Rpc):
 
         self.request_type = 'streaming'
 
+    def __str__(self):
+        return str(self.subscription_list)
 
     def generator(self):
         while True:
@@ -389,7 +401,7 @@ class Subscribe(grpc_lib.Rpc):
     def receiver(self):
         self.rpc_handler = self.stub_method(self.generator(),
                                             metadata = self.metadata,
-                                            timeout = self.timeout)
+                                            timeout = self._timeout)
         for msg in self.rpc_handler:
             self.response_processor(msg)
             self.status = 'waiting'
@@ -402,12 +414,16 @@ class Subscribe(grpc_lib.Rpc):
 
     @property
     def subscription_list(self):
+        if self._qos:
+            qos = gnmi.QOSMarking(marking=self._qos)
+        else:
+            qos = None
         return gnmi.SubscriptionList(
                     prefix = self._prefix,
                     subscription = self._subscriptions,
                     use_aliases = self._use_aliases,
                     use_models = self._use_models,
-                    qos = gnmi.QOSMarking(marking=self._qos),
+                    qos = qos,
                     mode = self._mode,
                     encoding = self._encoding)
 
