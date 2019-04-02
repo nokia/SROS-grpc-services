@@ -978,7 +978,6 @@ def next_hop_group(ctx, request_id, group_id, weight, primary_ip, primary_labels
         sys.exit()
     if not request_id:
         request_id = ctx.obj['last_req']
-    click.secho('{}'.format(request_id), fg='red')
     ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].next_hop_group(
                                                                         request_id=request_id,
                                                                         group_id=group_id,
