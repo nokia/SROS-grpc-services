@@ -167,7 +167,8 @@ class RpcManager:
         try:
             rpc = str(self.rpcs[type][name])
         except KeyError:
-            raise GrpcStubError(message = 'Rpc with type and name doesnt exist')
+            raise ValueError('Rpc with type {type} and name {name} doesnt exist'.format(
+                                                            type=type, name=name))
         return rpc
 
 
@@ -183,17 +184,16 @@ class RpcManager:
             self.register_type(rpc.rpc_type)
         self.rpcs[rpc.rpc_type][rpc.name] = rpc
 
-    def destroy(self, rpc=None, rpc_type=None, name=None, cancel=True):
+
+    def destroy(self, rpc_type=None, name=None, cancel=True):
         """Remove rpc from manager, call cancel method if the.
 
         Args:
-            rpc: Rpc instance which has name and rpc_type attributes.
             rpc_type (str): Alternative to passing rpc instance is specifing rpc_type and name.
             name (str): Alternative to passing rpc instance is specifing rpc_type and name.
             cancel (bool): if set to True(default), cancel method of rpc is automatically called
                 before destroying the object. If cancel method is not implemented, nothing happens.
         """
-        rpc_type, name = rpc.rpc_type, rpc.name if rpc else rpc_type, name
         if (cancel == True and
             hasattr(self.rpcs[rpc_type][name], 'cancel') and
             self.rpcs[rpc_type][name].rpc_handler):
@@ -214,7 +214,7 @@ class Rpc:
         self.name = name
 
         self.metadata = metadata
-        self.timeout = timeout
+        self._timeout = timeout
         self.error = None
 
         self.status = 'init'
@@ -231,47 +231,11 @@ class Rpc:
         self.response_handler = None #gnmi.SetResponse
 
     def __str__(self):
-        return ('REQUEST:\n{request}\n\n'
-                'RESPONSE:\n{response}\n\n'
-                'ERROR:\n{error}\n').format(
-                    request=self.request,
-                    response=self.response,
-                    error=self.error)
-
-    def stream_generator(self):
-        # per stub generator which is consuming self.request
-        # and producing rpc requests applicable in request_streaming
-        # scenario
-        while 1:
-            self.work_queue.get()
-            self.status = 'processing'
-            yield self.request_handler(self.request)
-            self.work_queue.task_done()
-
-    # TODO: it would be nice to build workflow for services
-    # like gnoi certificates when you have to wait
-    # for certian action from remote side
-    # to send another message
-    def stream_receiver(self):
-        # per stub receiver
-        self.rpc_handler = self.stub(self.generator(), metadata = self.metadata)
-        self.rpc_handler = self.stub.Modify(self.request_generator(), metadata = self.metadata)
-        for msg in iter(self.rpc_handler):
-            self.response.append(result)
-            self.status = 'idle'
-
-    # TODO this doesnt actually return generator
-    # think of a better name, i will just probably leave it as generator
-    # TODO what if this is called multiple times?
-    def unary_generator(self):
-        return self.request_handler(self.request)
+        raise NotImplementedError
 
 
-    # what if this is called multiple times?
-    # TODO what if this is called multiple times?
-    def unary_receiver(self):
-        self.rcp_handler = self.stub.future(self.generator(), metadata = self.metadata)
-        self.response = self.rpc_handler.result()
+    def timeout(self, timeout=None):
+        self._timeout = timeout
 
 
     def execute(self, timeout=None):

@@ -252,7 +252,7 @@ def type(ctx, type):
         Adds DataType to GetRequest - all|config|state|operational
     '''
     type = type.upper()
-    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].set_type(type=type)
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].data_type(data_type=type)
 
 @gnmi_get.command(name='models')
 @click.option('--name', default=None, type=str)
@@ -263,7 +263,7 @@ def models(ctx, name, organization, version):
     '''
         Appends ModelData to GetRequest
     '''
-    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].set_use_models(name=name,
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].use_models(name=name,
                                                                             organization=organization,
                                                                             version=version)
 
@@ -370,6 +370,7 @@ def destroy(ctx):
                                                                         )
     except Exception as e:
         click.secho('\n{0}\n'.format(e), fg='red')
+        raise
 
 
 @grpc_shell.group(invoke_without_command=True, name='gnmi_set')
