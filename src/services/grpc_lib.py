@@ -208,6 +208,7 @@ class Rpc:
 
     def __init__(self, stub=None, name=None, rpc_type=None,
                  metadata=None, delimiter=None, timeout=None,
+                 server_addr=None, server_port=None,
                  *args, **kwargs):
         self.stub = stub
         self.rpc_type = rpc_type
@@ -229,6 +230,10 @@ class Rpc:
 
         self.request_handler = None #gnmi.SetRequest
         self.response_handler = None #gnmi.SetResponse
+
+        self.server_addr = server_addr
+        self.server_port = server_port
+
 
     def __str__(self):
         raise NotImplementedError

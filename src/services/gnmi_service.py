@@ -503,7 +503,11 @@ class Subscribe(grpc_lib.Rpc):
         self.streamer.send(response)
 
     def stream(self, ip = None, port = None, protocol = None, formatting=None):
-        self.streamer = NotificationStreamer(ip=ip, port=port, protocol=protocol, formatting=formatting)
+        self.streamer = NotificationStreamer(ip=ip, port=port,
+                                             server_addr=self.server_addr,
+                                             server_port=self.server_port,
+                                             protocol=protocol,
+                                             formatting=formatting)
         
 
 class NotificationStreamer(object):
@@ -513,10 +517,13 @@ class NotificationStreamer(object):
         destination
     '''
     def __init__(self, ip=None, port=None, protocol=None,
+                 server_addr=None, server_port=None,
                  formatting='json'):
         self.ip = ip
         self.port = port
         self.protocol = protocol
+        self.server_addr = server_addr
+        self.server_port = server_port
         self.formatting = formatting
         if protocol == 'udp':
             self.socket = self.udp_socket()
@@ -562,6 +569,8 @@ class NotificationStreamer(object):
                         context = context[el.name]
 
                 output_msg = {}
+                output_msg['address'] = self.server_addr
+                output_msg['port'] = self.server_port
                 output_msg['notification'] = notification
                 output_msg['timestamp'] = msg.update.timestamp
                 output_msg['update_type'] = update_type
