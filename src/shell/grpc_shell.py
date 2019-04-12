@@ -645,17 +645,17 @@ def gnmi_subscribe(ctx, name, paging, mode, qos, prefix, allow_aggregation, use_
                         click.echo(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
             else:
                 click.secho('Rpc with name \'{name}\' doesnt exists, adding one to rpc manager'.format(name=name), fg='yellow')
-                ctx.obj['manager'].rpcs[rpc_type][name] = gnmi.Subscribe(
-                                                                        stub=ctx.obj['gnmi_stub'],
-                                                                        metadata=ctx.obj['context'].metadata,
-                                                                        name=name,
-                                                                        mode=mode,
-                                                                        prefix=prefix,
-                                                                        delimiter=default_delimiter,
-                                                                        qos=qos,
-                                                                        allow_aggregation=allow_aggregation,
-                                                                        use_aliases=use_aliases
-                                                         )
+                ctx.obj['manager'].rpcs[rpc_type][name] = gnmi.Subscribe(stub=ctx.obj['gnmi_stub'],
+                                                                         metadata=ctx.obj['context'].metadata,
+                                                                         server_addr=ctx.obj['context'].ip,
+                                                                         server_port=ctx.obj['context'].port,
+                                                                         name=name,
+                                                                         mode=mode,
+                                                                         prefix=prefix,
+                                                                         delimiter=default_delimiter,
+                                                                         qos=qos,
+                                                                         allow_aggregation=allow_aggregation,
+                                                                         use_aliases=use_aliases)
             ctx.obj['RPC_NAME'] = name
             ctx.obj['RPC_TYPE'] = rpc_type
         except KeyError as e:
