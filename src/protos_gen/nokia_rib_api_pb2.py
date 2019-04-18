@@ -20,8 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='nokia-rib-api.proto',
   package='Nokia.SROS',
   syntax='proto2',
-  serialized_options=_b('\212\361\004\0050.4.0'),
-  serialized_pb=_b('\n\x13nokia-rib-api.proto\x12\nNokia.SROS\x1a google/protobuf/descriptor.proto\"\xb6\x08\n\rModifyRequest\x12\x32\n\x07request\x18\x01 \x03(\x0b\x32!.Nokia.SROS.ModifyRequest.Request\x1a\xf0\x07\n\x07Request\x12\n\n\x02id\x18\x01 \x01(\x04\x12*\n\nEND_OF_RIB\x18\x02 \x01(\x0b\x32\x14.Nokia.SROS.EndOfRibH\x00\x12\x35\n\x0eipv4_route_ADD\x18\x03 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12\x39\n\x12ipv4_route_REPLACE\x18\x04 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12;\n\x11ipv4_route_DELETE\x18\x05 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKeyH\x00\x12\x35\n\x0eipv6_route_ADD\x18\x06 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12\x39\n\x12ipv6_route_REPLACE\x18\x07 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12;\n\x11ipv6_route_DELETE\x18\x08 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKeyH\x00\x12\x37\n\x0fipv4_tunnel_ADD\x18\t \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12;\n\x13ipv4_tunnel_REPLACE\x18\n \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12=\n\x12ipv4_tunnel_DELETE\x18\x0b \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKeyH\x00\x12\x37\n\x0fipv6_tunnel_ADD\x18\x0c \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12;\n\x13ipv6_tunnel_REPLACE\x18\r \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12=\n\x12ipv6_tunnel_DELETE\x18\x0e \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKeyH\x00\x12\x35\n\x0empls_label_ADD\x18\x0f \x01(\x0b\x32\x1b.Nokia.SROS.LabelTableEntryH\x00\x12\x39\n\x12mpls_label_REPLACE\x18\x10 \x01(\x0b\x32\x1b.Nokia.SROS.LabelTableEntryH\x00\x12;\n\x11mpls_label_DELETE\x18\x11 \x01(\x0b\x32\x1e.Nokia.SROS.LabelTableEntryKeyH\x00\x12.\n\tNH_SWITCH\x18\x12 \x01(\x0b\x32\x19.Nokia.SROS.NextHopSwitchH\x00\x42\x06\n\x04\x64\x61ta\"\xd6\x01\n\x0eModifyResponse\x12\x31\n\x06result\x18\x01 \x03(\x0b\x32!.Nokia.SROS.ModifyResponse.Result\x1a\x90\x01\n\x06Result\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x38\n\x06status\x18\x02 \x01(\x0e\x32(.Nokia.SROS.ModifyResponse.Result.Status\x12\x17\n\x0f\x65xtended_status\x18\x03 \x01(\t\"\'\n\x06Status\x12\t\n\x05UNSET\x10\x00\x12\x06\n\x02OK\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\"\x10\n\x0eVersionRequest\"\xa0\x01\n\x0fVersionResponse\x12\x13\n\x0b\x61pi_version\x18\x01 \x01(\t\x12=\n\x12operational_tables\x18\x02 \x03(\x0b\x32!.Nokia.SROS.VersionResponse.Table\x1a\x39\n\x05Table\x12\x1f\n\x02id\x18\x01 \x01(\x0e\x32\x13.Nokia.SROS.TableId\x12\x0f\n\x07version\x18\x02 \x01(\t\"+\n\x08\x45ndOfRib\x12\x1f\n\x02id\x18\x01 \x01(\x0e\x32\x13.Nokia.SROS.TableId\"\xc0\x01\n\rNextHopSwitch\x12\x12\n\x08\x65ndpoint\x18\x01 \x01(\tH\x00\x12\x0f\n\x05label\x18\x02 \x01(\rH\x00\x12\x12\n\npreference\x18\x03 \x01(\r\x12\x13\n\x0bnh_group_id\x18\x04 \x01(\r\x12,\n\x04type\x18\x05 \x01(\x0e\x32\x1e.Nokia.SROS.NextHopSwitch.Type\",\n\x04Type\x12\x0b\n\x07INVALID\x10\x00\x12\x0b\n\x07Primary\x10\x01\x12\n\n\x06\x42\x61\x63kup\x10\x02\x42\x05\n\x03key\"8\n\x12RouteTableEntryKey\x12\x0e\n\x06prefix\x18\x01 \x01(\t\x12\x12\n\npreference\x18\x02 \x01(\r\"\x85\x01\n\x0fRouteTableEntry\x12\x31\n\tentry_key\x18\x01 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKey\x12\x16\n\x0ertm_preference\x18\x02 \x01(\r\x12\x0e\n\x06metric\x18\x03 \x01(\r\x12\x17\n\x0ftunnel_next_hop\x18\x04 \x01(\t\"u\n\x0cNextHopGroup\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0e\n\x06weight\x18\x02 \x01(\r\x12$\n\x07primary\x18\x03 \x01(\x0b\x32\x13.Nokia.SROS.NextHop\x12#\n\x06\x62\x61\x63kup\x18\x04 \x01(\x0b\x32\x13.Nokia.SROS.NextHop\"9\n\x07NextHop\x12\x12\n\nip_address\x18\x01 \x01(\t\x12\x1a\n\x12pushed_label_stack\x18\x02 \x03(\r\";\n\x13TunnelTableEntryKey\x12\x10\n\x08\x65ndpoint\x18\x01 \x01(\t\x12\x12\n\npreference\x18\x02 \x01(\r\"\x98\x01\n\x10TunnelTableEntry\x12\x32\n\tentry_key\x18\x01 \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKey\x12\x16\n\x0ettm_preference\x18\x02 \x01(\r\x12\x0e\n\x06metric\x18\x03 \x01(\r\x12(\n\x06groups\x18\x04 \x03(\x0b\x32\x18.Nokia.SROS.NextHopGroup\"7\n\x12LabelTableEntryKey\x12\r\n\x05label\x18\x01 \x01(\r\x12\x12\n\npreference\x18\x02 \x01(\r\"%\n\x13LabelTableIngrStats\x12\x0e\n\x06\x65nable\x18\x01 \x01(\x08\"\xa2\x01\n\x0fLabelTableEntry\x12\x31\n\tentry_key\x18\x01 \x01(\x0b\x32\x1e.Nokia.SROS.LabelTableEntryKey\x12(\n\x06groups\x18\x02 \x03(\x0b\x32\x18.Nokia.SROS.NextHopGroup\x12\x32\n\ting_stats\x18\x03 \x01(\x0b\x32\x1f.Nokia.SROS.LabelTableIngrStats*|\n\x07TableId\x12\x0b\n\x07INVALID\x10\x00\x12\x12\n\x0eIPv4RouteTable\x10\x01\x12\x12\n\x0eIPv6RouteTable\x10\x02\x12\x13\n\x0fIPv4TunnelTable\x10\x03\x12\x13\n\x0fIPv6TunnelTable\x10\x04\x12\x12\n\x0eMplsLabelTable\x10\x05\x32\x94\x01\n\x06RibApi\x12\x43\n\x06Modify\x12\x19.Nokia.SROS.ModifyRequest\x1a\x1a.Nokia.SROS.ModifyResponse(\x01\x30\x01\x12\x45\n\nGetVersion\x12\x1a.Nokia.SROS.VersionRequest\x1a\x1b.Nokia.SROS.VersionResponse:6\n\x0frib_api_service\x12\x1c.google.protobuf.FileOptions\x18\x91N \x01(\tB\t\x8a\xf1\x04\x05\x30.4.0')
+  serialized_options=_b('\212\361\004\0051.0.0'),
+  serialized_pb=_b('\n\x13nokia-rib-api.proto\x12\nNokia.SROS\x1a google/protobuf/descriptor.proto\"\xb6\x08\n\rModifyRequest\x12\x32\n\x07request\x18\x01 \x03(\x0b\x32!.Nokia.SROS.ModifyRequest.Request\x1a\xf0\x07\n\x07Request\x12\n\n\x02id\x18\x01 \x01(\x04\x12*\n\nEND_OF_RIB\x18\x02 \x01(\x0b\x32\x14.Nokia.SROS.EndOfRibH\x00\x12\x35\n\x0eipv4_route_ADD\x18\x03 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12\x39\n\x12ipv4_route_REPLACE\x18\x04 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12;\n\x11ipv4_route_DELETE\x18\x05 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKeyH\x00\x12\x35\n\x0eipv6_route_ADD\x18\x06 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12\x39\n\x12ipv6_route_REPLACE\x18\x07 \x01(\x0b\x32\x1b.Nokia.SROS.RouteTableEntryH\x00\x12;\n\x11ipv6_route_DELETE\x18\x08 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKeyH\x00\x12\x37\n\x0fipv4_tunnel_ADD\x18\t \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12;\n\x13ipv4_tunnel_REPLACE\x18\n \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12=\n\x12ipv4_tunnel_DELETE\x18\x0b \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKeyH\x00\x12\x37\n\x0fipv6_tunnel_ADD\x18\x0c \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12;\n\x13ipv6_tunnel_REPLACE\x18\r \x01(\x0b\x32\x1c.Nokia.SROS.TunnelTableEntryH\x00\x12=\n\x12ipv6_tunnel_DELETE\x18\x0e \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKeyH\x00\x12\x35\n\x0empls_label_ADD\x18\x0f \x01(\x0b\x32\x1b.Nokia.SROS.LabelTableEntryH\x00\x12\x39\n\x12mpls_label_REPLACE\x18\x10 \x01(\x0b\x32\x1b.Nokia.SROS.LabelTableEntryH\x00\x12;\n\x11mpls_label_DELETE\x18\x11 \x01(\x0b\x32\x1e.Nokia.SROS.LabelTableEntryKeyH\x00\x12.\n\tNH_SWITCH\x18\x12 \x01(\x0b\x32\x19.Nokia.SROS.NextHopSwitchH\x00\x42\x06\n\x04\x64\x61ta\"\xd6\x01\n\x0eModifyResponse\x12\x31\n\x06result\x18\x01 \x03(\x0b\x32!.Nokia.SROS.ModifyResponse.Result\x1a\x90\x01\n\x06Result\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x38\n\x06status\x18\x02 \x01(\x0e\x32(.Nokia.SROS.ModifyResponse.Result.Status\x12\x17\n\x0f\x65xtended_status\x18\x03 \x01(\t\"\'\n\x06Status\x12\t\n\x05UNSET\x10\x00\x12\x06\n\x02OK\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\"\x10\n\x0eVersionRequest\"\xa0\x01\n\x0fVersionResponse\x12\x13\n\x0b\x61pi_version\x18\x01 \x01(\t\x12=\n\x12operational_tables\x18\x02 \x03(\x0b\x32!.Nokia.SROS.VersionResponse.Table\x1a\x39\n\x05Table\x12\x1f\n\x02id\x18\x01 \x01(\x0e\x32\x13.Nokia.SROS.TableId\x12\x0f\n\x07version\x18\x02 \x01(\t\"+\n\x08\x45ndOfRib\x12\x1f\n\x02id\x18\x01 \x01(\x0e\x32\x13.Nokia.SROS.TableId\"\xc0\x01\n\rNextHopSwitch\x12\x12\n\x08\x65ndpoint\x18\x01 \x01(\tH\x00\x12\x0f\n\x05label\x18\x02 \x01(\rH\x00\x12\x12\n\npreference\x18\x03 \x01(\r\x12\x13\n\x0bnh_group_id\x18\x04 \x01(\r\x12,\n\x04type\x18\x05 \x01(\x0e\x32\x1e.Nokia.SROS.NextHopSwitch.Type\",\n\x04Type\x12\x0b\n\x07INVALID\x10\x00\x12\x0b\n\x07Primary\x10\x01\x12\n\n\x06\x42\x61\x63kup\x10\x02\x42\x05\n\x03key\"8\n\x12RouteTableEntryKey\x12\x0e\n\x06prefix\x18\x01 \x01(\t\x12\x12\n\npreference\x18\x02 \x01(\r\"\x85\x01\n\x0fRouteTableEntry\x12\x31\n\tentry_key\x18\x01 \x01(\x0b\x32\x1e.Nokia.SROS.RouteTableEntryKey\x12\x16\n\x0ertm_preference\x18\x02 \x01(\r\x12\x0e\n\x06metric\x18\x03 \x01(\r\x12\x17\n\x0ftunnel_next_hop\x18\x04 \x01(\t\"u\n\x0cNextHopGroup\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0e\n\x06weight\x18\x02 \x01(\r\x12$\n\x07primary\x18\x03 \x01(\x0b\x32\x13.Nokia.SROS.NextHop\x12#\n\x06\x62\x61\x63kup\x18\x04 \x01(\x0b\x32\x13.Nokia.SROS.NextHop\"9\n\x07NextHop\x12\x12\n\nip_address\x18\x01 \x01(\t\x12\x1a\n\x12pushed_label_stack\x18\x02 \x03(\r\";\n\x13TunnelTableEntryKey\x12\x10\n\x08\x65ndpoint\x18\x01 \x01(\t\x12\x12\n\npreference\x18\x02 \x01(\r\"\x98\x01\n\x10TunnelTableEntry\x12\x32\n\tentry_key\x18\x01 \x01(\x0b\x32\x1f.Nokia.SROS.TunnelTableEntryKey\x12\x16\n\x0ettm_preference\x18\x02 \x01(\r\x12\x0e\n\x06metric\x18\x03 \x01(\r\x12(\n\x06groups\x18\x04 \x03(\x0b\x32\x18.Nokia.SROS.NextHopGroup\"7\n\x12LabelTableEntryKey\x12\r\n\x05label\x18\x01 \x01(\r\x12\x12\n\npreference\x18\x02 \x01(\r\"%\n\x13LabelTableIngrStats\x12\x0e\n\x06\x65nable\x18\x01 \x01(\x08\"\xfa\x01\n\x0fLabelTableEntry\x12\x31\n\tentry_key\x18\x01 \x01(\x0b\x32\x1e.Nokia.SROS.LabelTableEntryKey\x12(\n\x06groups\x18\x02 \x03(\x0b\x32\x18.Nokia.SROS.NextHopGroup\x12\x32\n\ting_stats\x18\x03 \x01(\x0b\x32\x1f.Nokia.SROS.LabelTableIngrStats\x12.\n\x04type\x18\x04 \x01(\x0e\x32 .Nokia.SROS.LabelTableEntry.Type\"&\n\x04Type\x12\x0b\n\x07INVALID\x10\x00\x12\x07\n\x03POP\x10\x01\x12\x08\n\x04SWAP\x10\x02*|\n\x07TableId\x12\x0b\n\x07INVALID\x10\x00\x12\x12\n\x0eIPv4RouteTable\x10\x01\x12\x12\n\x0eIPv6RouteTable\x10\x02\x12\x13\n\x0fIPv4TunnelTable\x10\x03\x12\x13\n\x0fIPv6TunnelTable\x10\x04\x12\x12\n\x0eMplsLabelTable\x10\x05\x32\x94\x01\n\x06RibApi\x12\x43\n\x06Modify\x12\x19.Nokia.SROS.ModifyRequest\x1a\x1a.Nokia.SROS.ModifyResponse(\x01\x30\x01\x12\x45\n\nGetVersion\x12\x1a.Nokia.SROS.VersionRequest\x1a\x1b.Nokia.SROS.VersionResponse:6\n\x0frib_api_service\x12\x1c.google.protobuf.FileOptions\x18\x91N \x01(\tB\t\x8a\xf1\x04\x05\x31.0.0')
   ,
   dependencies=[google_dot_protobuf_dot_descriptor__pb2.DESCRIPTOR,])
 
@@ -58,8 +58,8 @@ _TABLEID = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2637,
-  serialized_end=2761,
+  serialized_start=2725,
+  serialized_end=2849,
 )
 _sym_db.RegisterEnumDescriptor(_TABLEID)
 
@@ -131,6 +131,32 @@ _NEXTHOPSWITCH_TYPE = _descriptor.EnumDescriptor(
   serialized_end=1779,
 )
 _sym_db.RegisterEnumDescriptor(_NEXTHOPSWITCH_TYPE)
+
+_LABELTABLEENTRY_TYPE = _descriptor.EnumDescriptor(
+  name='Type',
+  full_name='Nokia.SROS.LabelTableEntry.Type',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='INVALID', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='POP', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SWAP', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=2685,
+  serialized_end=2723,
+)
+_sym_db.RegisterEnumDescriptor(_LABELTABLEENTRY_TYPE)
 
 
 _MODIFYREQUEST_REQUEST = _descriptor.Descriptor(
@@ -952,11 +978,19 @@ _LABELTABLEENTRY = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='Nokia.SROS.LabelTableEntry.type', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
+    _LABELTABLEENTRY_TYPE,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -965,7 +999,7 @@ _LABELTABLEENTRY = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2473,
-  serialized_end=2635,
+  serialized_end=2723,
 )
 
 _MODIFYREQUEST_REQUEST.fields_by_name['END_OF_RIB'].message_type = _ENDOFRIB
@@ -1062,6 +1096,8 @@ _TUNNELTABLEENTRY.fields_by_name['groups'].message_type = _NEXTHOPGROUP
 _LABELTABLEENTRY.fields_by_name['entry_key'].message_type = _LABELTABLEENTRYKEY
 _LABELTABLEENTRY.fields_by_name['groups'].message_type = _NEXTHOPGROUP
 _LABELTABLEENTRY.fields_by_name['ing_stats'].message_type = _LABELTABLEINGRSTATS
+_LABELTABLEENTRY.fields_by_name['type'].enum_type = _LABELTABLEENTRY_TYPE
+_LABELTABLEENTRY_TYPE.containing_type = _LABELTABLEENTRY
 DESCRIPTOR.message_types_by_name['ModifyRequest'] = _MODIFYREQUEST
 DESCRIPTOR.message_types_by_name['ModifyResponse'] = _MODIFYRESPONSE
 DESCRIPTOR.message_types_by_name['VersionRequest'] = _VERSIONREQUEST
@@ -1220,8 +1256,8 @@ _RIBAPI = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2764,
-  serialized_end=2912,
+  serialized_start=2852,
+  serialized_end=3000,
   methods=[
   _descriptor.MethodDescriptor(
     name='Modify',

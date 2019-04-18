@@ -953,14 +953,16 @@ def tunnel(ctx, operation, table, id, key_endpoint, key_preference, ttm_preferen
 @click.option('--key_label', default=None, type=int)
 @click.option('--key_preference', default=None, type=int)
 @click.option('--ing_stats_enable', default=None, type=int)
+@click.option('--type', default=None,type=str)
 @click.pass_context
-def label(ctx, operation, id, key_label, key_preference, ing_stats_enable):
+def label(ctx, operation, id, key_label, key_preference, ing_stats_enable, type):
     ctx.obj['last_req'] = ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].label(
                                                                             operation=operation,
                                                                             id=id,
                                                                             key_label=key_label,
                                                                             key_preference=key_preference,
-                                                                            ing_stats_enable=ing_stats_enable
+                                                                            ing_stats_enable=ing_stats_enable,
+                                                                            type=type
                                                                         )
 
 @rib_modify.command(name='next_hop_group')

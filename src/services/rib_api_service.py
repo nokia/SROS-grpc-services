@@ -416,7 +416,7 @@ class Modify(Rpc):
 
 
     def label(self, id = None, operation = None, key_label=None, key_preference=None,
-              ing_stats_enable=None, json=None):
+              ing_stats_enable=None, type=None, json=None):
         '''
             Constructs ModifyRequest with LabelTableEntry message and adds it to request queue.
 
@@ -447,7 +447,8 @@ class Modify(Rpc):
                                         ),
                                         ing_stats = rib.LabelTableIngrStats(
                                             enable = ing_stats_enable
-                                        )
+                                        ),
+                                        type=type
                                     )
                 if operation == 'add':
                     msg = rib.ModifyRequest.Request(id=id,mpls_label_ADD = label_entry)

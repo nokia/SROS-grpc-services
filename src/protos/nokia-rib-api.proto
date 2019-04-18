@@ -10,7 +10,7 @@ extend google.protobuf.FileOptions {
   optional string rib_api_service = 10001;
 }
 
-option (rib_api_service) = "0.4.0"; // RibApi service version, returned through the GetVersion RPC
+option (rib_api_service) = "1.0.0"; // RibApi service version, returned through the GetVersion RPC
 
 service RibApi {
   rpc Modify(stream ModifyRequest) returns (stream ModifyResponse);
@@ -137,7 +137,7 @@ message NextHopGroup {
                                              // Optional if there is only one nexthop group
   optional NextHop primary = 3;              // Primary nexthop attributes
   optional NextHop backup = 4;               // Backup nexthop attributes
-}
+  }
 
 message NextHop {
   optional string ip_address = 1;            // Ipv4 or Ipv6 address
@@ -171,7 +171,14 @@ message LabelTableIngrStats {
 }
 message LabelTableEntry {
   optional LabelTableEntryKey entry_key = 1;  // Key;
-  repeated NextHopGroup groups = 2;           // Optional - If the field is specified indicates a SWAP
-                                              // operation in HW, else it is POP
+  repeated NextHopGroup groups = 2;           // At least one group must be specified for SWAP operation in HW
+                                              // Group cannot be specified for POP type
   optional LabelTableIngrStats ing_stats = 3; // Ingress stats attributes
+  optional Type type = 4;                     // Indicate the entry type
+
+  enum Type {
+    INVALID = 0;
+    POP = 1;
+    SWAP  = 2;
+  }
 }
