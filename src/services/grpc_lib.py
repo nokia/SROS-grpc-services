@@ -289,12 +289,23 @@ class Rpc:
             self.rpc_handler.cancel()
 
 
-    def wait(self):
-        '''
-            Wait until all request receive response.
+    def wait(self, timeout=None):
+        """Wait until all requests receive response.
 
-        '''
-        self.work_queue.join()
+            If timeout in seconds is specified, the function will
+            block until the queue is empty or timeout expires.
+            None is returned in both cases, so if user needs to know
+            if all requests were processed, he has to check the queue
+            himself. This is in line with how thread join works.
+
+        """
+        if timeout:
+            stop = time.time() + timeout
+            while (self.work_queue.unfinished_tasks and
+                   time.time() < stop):
+                time.sleep(0.1)
+        else:
+            self.work_queue.join()
 
 
     def parse(self, target=None, msg=None, format=None, handler=None):

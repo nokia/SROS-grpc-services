@@ -321,7 +321,9 @@ def load(ctx, input, format):
               help=('Blocking process waits for rpc to finish. non-blocking returns '
                     'immediately and progress or response can be monitored by response '
                     'subcommand for given RPC.'))
-@click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
 @click.pass_context
 def execute(ctx, process, timeout):
     '''
@@ -330,6 +332,8 @@ def execute(ctx, process, timeout):
     ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
 
     if process == 'blocking':
+        if timeout == -1:
+            timeout = None
         try:
             ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
             if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
@@ -474,9 +478,10 @@ def delete(ctx, path, delimiter):
 @gnmi_set.command(name='execute')
 @click.option('--process', default='blocking', type=click.Choice(['blocking', 'non-blocking']),
               help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
-                    'immediately and progress or response can be monitored by response '
-                    'subcommand for given RPC.'))
-@click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
+                    'immediately.'))
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
 @click.pass_context
 def execute(ctx, process, timeout):
     '''
@@ -485,6 +490,8 @@ def execute(ctx, process, timeout):
     ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
 
     if process == 'blocking':
+        if timeout == -1:
+            timeout = None
         try:
             ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
             if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
@@ -494,7 +501,7 @@ def execute(ctx, process, timeout):
                 if err:
                     click.secho('Rpc finished with error:\n{0}'.format(err), fg='red')
                 else:
-                    click.secho('Rpc finished, call \'gnmi_set --name {0} response\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
+                    click.secho('Rpc finished, call \'gnmi_set --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
         except Exception as e:
             click.secho('\nError while executing rpc: {0}\n'.format(e))
 
@@ -596,9 +603,10 @@ def gnmi_capabilities(ctx, name, paging):
 @gnmi_capabilities.command(name='execute')
 @click.option('--process', default='blocking', type=click.Choice(['blocking', 'non-blocking']),
               help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
-                    'immediately and progress or response can be monitored by response '
-                    'subcommand for given RPC.'))
-@click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
+                    'immediately.'))
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
 @click.pass_context
 def execute(ctx, process, timeout):
     '''
@@ -607,6 +615,8 @@ def execute(ctx, process, timeout):
     ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
 
     if process == 'blocking':
+        if timeout == -1:
+            timeout = None
         try:
             ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
             if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
@@ -742,9 +752,9 @@ def forward_stream(ctx, ip, port, protocol, formatting):
 @gnmi_subscribe.command(name='execute')
 @click.option('--process', default='non-blocking', type=click.Choice(['blocking', 'non-blocking']),
               help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
-                    'immediately and progress or response can be monitored by response '
-                    'subcommand for given RPC.'))
-@click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
+                    'immediately.'))
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call.'))
 @click.pass_context
 def execute(ctx, process, timeout):
     '''
@@ -850,7 +860,9 @@ def rib_getversion(ctx, name, paging):
               help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
                     'immediately and progress or response can be monitored by response '
                     'subcommand for given RPC.'))
-@click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
 @click.pass_context
 def execute(ctx, process, timeout):
     '''
@@ -859,6 +871,8 @@ def execute(ctx, process, timeout):
     ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
 
     if process == 'blocking':
+        if timeout == -1:
+            timeout = None
         try:
             ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
             if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
@@ -1028,8 +1042,7 @@ def end_of_rib(ctx, id, table_id):
 @rib_modify.command(name='execute')
 @click.option('--process', default='non-blocking', type=click.Choice(['blocking', 'non-blocking']),
               help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
-                    'immediately and progress or response can be monitored by response '
-                    'subcommand for given RPC.'))
+                    'immediately.'))
 @click.option('--timeout', default=300, type=int, help='number of seconds to wait in case of blocking call')
 @click.option('--paging', is_flag=True)
 @click.pass_context
@@ -1041,12 +1054,16 @@ def execute(ctx, process, timeout, paging):
         for time specified by timeout parameter. Error is raised if
         timeout or RPC runtime error occurs.
     '''
-    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
+    rpc = ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']]
+    rpc.execute()
 
     if process == 'blocking':
         try:
-            ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].block(timeout_seconds=timeout)
-            click.secho('Rpc finished, call \'rib_modify --name {0} response\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
+            rpc.wait(timeout=timeout)
+            if rpc.work_queue.unfinished_tasks:
+                click.secho('Not all rpc requests were processed, \'rib_modify --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='red')
+            else:
+                click.secho('Rpc finished, call \'rib_modify --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
         except Exception as e:
             click.secho('\nError while executing rpc: {0}\n'.format(e), fg='red')
 
@@ -1055,11 +1072,16 @@ def execute(ctx, process, timeout, paging):
 @click.pass_context
 def block(ctx, timeout):
     '''
-
+        Blocks until all requests are processed or timeout occurs.
+    
     '''
     try:
-        ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].block(timeout_seconds=timeout)
-        click.secho('Rpc finished, call \'rib_modify --name {0} response\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
+        rpc = ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']]
+        rpc.wait(timeout=timeout)
+        if rpc.work_queue.unfinished_tasks:
+            click.secho('Not all rpc requests were processed, \'rib_modify --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='red')
+        else:
+            click.secho('Rpc finished, call \'rib_modify --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
     except Exception as e:
         click.secho('\nError while executing rpc: {0}\n'.format(e), fg='red')
 
