@@ -3,6 +3,7 @@
 import click
 import sys
 import os
+import time
 
 from configparser import ConfigParser
 import pickle
@@ -21,8 +22,6 @@ try:
     import gnureadline as readline
 except ImportError:
     readline = None
-
-
 
 logger = logging.getLogger()
 
@@ -71,6 +70,27 @@ def history(lines):
         for x in range(hist_length, hist_length-lines, -1):
             click.secho(str(readline.get_history_item(x)))
         click.echo("")
+
+
+@grpc_shell.command(name='listen')
+def listen():
+    """
+        This will implement server which
+        will listen for any commands sent to client
+        on some port.
+        For now, it only exists on KeyboardInterrupt
+        exception.
+    """
+    reason = None
+    try:
+        while True:
+            # ugly placeholder - time.sleep still listens for ctrl-c
+            # and doesnt consume lot of cpu cycles
+            # this will be replaced by server loop
+            time.sleep(1000)
+    except KeyboardInterrupt:
+        reason = 'KeyboardInterrupt'
+    click.secho('Block interrupted by {reason}'.format(reason=reason))
 
 
 def exec_config_fc(exec_file=None):
