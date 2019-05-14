@@ -91,11 +91,11 @@ class Channel:
 
         if transport == 'secure':
             root_certificates = open(root_cert, 'rb').read() if root_cert else None
-            private_key = open(key, 'rb').read() if private_key else None
-            certificate_chain = open(cert, 'rb') if certificate_chain else None
+            private_key = open(key, 'rb').read() if key else None
+            certificate_chain = open(cert, 'rb').read() if cert else None
             credentials = ssl_channel_credentials(root_certificates=root_certificates,
-                                                       private_key=private_key,
-                                                       certificate_chain=certificate_chain)
+                                                  private_key=private_key,
+                                                  certificate_chain=certificate_chain)
             self.channel = secure_channel(target=target, credentials=credentials, options=channel_opts)
         elif transport == 'unsecure':
             self.channel = insecure_channel(target=target, options=channel_opts)
