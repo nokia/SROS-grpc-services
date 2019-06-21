@@ -113,6 +113,7 @@ def load_config_fc(ctx, config_file=default_config_file):
         return
     try:
         defaults = ConfigParser()
+        defaults.optionxform = str
         defaults.read(config_file)
 
         # for backward compatiblity check for both context and connect sessions
