@@ -381,6 +381,16 @@ Rotate and Install can both manipulate certificates on target, detailed descript
 
 Besides classic RPC commands, shell introduces certificate manager, which holds certificate objects. These objects provides interface to generate and store CSR, certification authories and certificates itself. All currently loaded cert objects can be viewed by ```show certificates``` command.
 
+On SROS you will have to enable the service under grpc server configuration and permit the RPC in your aaa profile, md-cli:
+```
+/configure system grpc gnoi cert-mgmt admin-state enable
+/configure system security aaa local-profiles profile "dummy" grpc rpc-authorization gnoi-cert-mgmt-rotate permit
+/configure system security aaa local-profiles profile "dummy" grpc rpc-authorization gnoi-cert-mgmt-install permit
+/configure system security aaa local-profiles profile "dummy" grpc rpc-authorization gnoi-cert-mgmt-getcert permit
+/configure system security aaa local-profiles profile "dummy" grpc rpc-authorization gnoi-cert-mgmt-revoke permit
+/configure system security aaa local-profiles profile "dummy" grpc rpc-authorization gnoi-cert-mgmt-cangenerate permit
+```
+
 #### Examples
 Certificate manager is available via cert command. In each scenario we will need to create certification(CA) authority to sign and later verify our certificates.
 
