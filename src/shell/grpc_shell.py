@@ -16,7 +16,9 @@ import click_completion
 # put all supported grpc services here
 import services.gnmi_service as gnmi
 import services.rib_api_service as rib_api
+import services.gnoi_cert as gnoi_certificates
 import services.grpc_lib as grpc_lib
+import services.cert_manager as cert_mgr
 
 try:
     import gnureadline as readline
@@ -33,6 +35,7 @@ default_delimiter = '/'
 default_prompt = '(grpc-shell) > '
 startup_config = None
 teardown_config = None
+certificate_directory = None
 
 @click.group(name='grpc_shell')
 @click.pass_context
@@ -134,6 +137,9 @@ def load_config_fc(ctx, config_file=default_config_file):
             if 'startup_config' in settings_defaults:
                 global startup_config
                 startup_config = settings_defaults['startup_config']
+            if 'certificate_directory' in settings_defaults:
+                global certificate_directory
+                certificate_directory = settings_defaults['certificate_directory']
         if defaults.has_section('environment'):
             environment = dict(defaults.items('environment'))
             for key in environment:
@@ -1215,6 +1221,290 @@ def load_binary_file(ctx, binary_file):
         click.secho('Exception occured, failed to load binary file {0}'.format(binary_file.name), fg='red')
         raise
 
+@grpc_shell.group(invoke_without_command=True, name='gnoi_cert_can_generate_csr')
+@click.option('--name', default='default_can_generate_csr', type=str, help='RPCs given name - used for managing RPCs in this client')
+@click.option('--paging', is_flag=True, help='Use pager inherited from shell in case there is long text to display.')
+@click.option('--key_type', default='KT_RSA')
+@click.option('--certificate_type', default='CT_X509')
+@click.option('--key_size',default=2048)
+@click.pass_context
+def gnoi_cert_can_generate_csr(ctx, name, paging, key_type, certificate_type, key_size):
+    '''
+        gnoi.certificate CanGenerateCSR 
+    '''
+    if ctx.invoked_subcommand != 'help':
+        try:
+            rpc_type = 'CertificateManagement.CanGenerateCSR'
+            if name in ctx.obj['manager'].rpcs[rpc_type]:
+                if ctx.invoked_subcommand is None:
+                    if paging:
+                        click.echo_via_pager(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+                    else:
+                        click.echo(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+
+            else:
+                click.secho('Rpc with name \'{name}\' doesnt exists, adding one to rpc manager'.format(name=name), fg='yellow')
+                ctx.obj['manager'].rpcs[rpc_type][name] = gnoi_certificates.CanGenerateCSR(
+                                                                        stub=ctx.obj['gnoi_cert_stub'],
+                                                                        metadata=ctx.obj['context'].metadata,
+                                                                        name=name,
+                                                                        key_type=key_type,
+                                                                        certificate_type=certificate_type,
+                                                                        key_size=key_size)
+            ctx.obj['RPC_NAME'] = name
+            ctx.obj['RPC_TYPE'] = rpc_type
+        except KeyError as e:
+            click.secho('\nYou have to create at least one connection before creating RPCs\n', fg='red')
+            raise
+            sys.exit()
+
+
+@gnoi_cert_can_generate_csr.command(name='execute')
+@click.option('--process', default='blocking', type=click.Choice(['blocking', 'non-blocking']),
+              help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
+                    'immediately.'))
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
+@click.pass_context
+def execute(ctx, process, timeout):
+    '''
+        Executes rpc
+    '''
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
+
+    if process == 'blocking':
+        if timeout == -1:
+            timeout = None
+        try:
+            ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
+            if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
+                click.secho('\nMax wait limit {0}s exceeded\n'.format(timeout), fg='red')
+            else:
+                err = ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].error
+                if err:
+                    click.secho('Rpc finished with error:\n{0}'.format(err), fg='red')
+                else:
+                    click.secho('Rpc finished, call \'gnoi_cert_can_generate_csr --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
+        except Exception as e:
+            click.secho('\nError while executing rpc: {0}\n'.format(e))
+
+
+
+@grpc_shell.group(invoke_without_command=True, name='gnoi_cert')
+@click.option('--name', required=True, type=str, help='RPCs given name - used for managing RPCs in this client and as certificate id')
+@click.option('--cert_object', type=str, help='name of associated cert object from cert manager')
+@click.option('--paging', is_flag=True, help='Use pager inherited from shell in case there is long text to display.')
+@click.option('--timeout', default=240, type=int, help='name of associated cert object from cert manager')
+@click.option('--rpc', type=click.Choice(['install', 'rotate']), help='install or rotate')
+@click.pass_context
+def gnoi_cert(ctx, name, cert_object, timeout, paging, rpc):
+    '''
+        gnoi.certificate CanGenerateCSR 
+    '''
+    if ctx.invoked_subcommand != 'help':
+        try:
+            rpc_type = 'CertificateManagement.Install'
+            if name in ctx.obj['manager'].rpcs[rpc_type]:
+                if ctx.invoked_subcommand is None:
+                    if paging:
+                        click.echo_via_pager(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+                    else:
+                        click.echo(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+
+            else:
+                if cert_object:
+                    cert = ctx.obj['cert_manager'].get_certificate(name=cert_object)
+                click.secho('Rpc with name \'{name}\' doesnt exists, adding one to rpc manager'.format(name=name), fg='yellow')
+                ctx.obj['manager'].rpcs[rpc_type][name] = gnoi_certificates.CertRpc(
+                                                                        stub=ctx.obj['gnoi_cert_stub'],
+                                                                        metadata=ctx.obj['context'].metadata,
+                                                                        certificate_id=name,
+                                                                        timeout=timeout,
+                                                                        certificate=cert,
+                                                                        rpc=rpc)
+            ctx.obj['RPC_NAME'] = name
+            ctx.obj['RPC_TYPE'] = rpc_type
+        except KeyError as e:
+            click.secho('\nYou have to create at least one connection before creating RPCs\n', fg='red')
+            raise
+            sys.exit()
+
+
+@gnoi_cert.command(name='generate_csr')
+@click.pass_context
+def generate_csr(ctx):
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].generate_csr()
+
+
+@gnoi_cert.command(name='load_certificate')
+@click.option('--local_keys', is_flag=True, help='Sends keys from csr in local certificate object.')
+@click.pass_context
+def load_certificate(ctx,local_keys):
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].load_certificate(local_keys=local_keys)
+
+@gnoi_cert.command(name='finalize')
+@click.pass_context
+def finalize(ctx):
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].finalize()
+
+@gnoi_cert.command(name='destroy')
+@click.pass_context
+def destroy(ctx):
+    '''
+        Removes RPC object from rpc manager.
+        Rpc with same name and new params can be created afterwards.
+    '''
+    try:
+        ctx.obj['manager'].destroy(rpc_type=ctx.obj['RPC_TYPE'], name=ctx.obj['RPC_NAME'])
+        click.secho('Rpc with type {0} and name {1} removed from manager'.format(
+                                                                            ctx.obj['RPC_TYPE'],
+                                                                            ctx.obj['RPC_NAME']
+                                                                            ),
+                                                                            fg='green'
+                                                                        )
+    except Exception as e:
+        click.secho('\n{0}\n'.format(e), fg='red')
+
+
+
+@grpc_shell.group(invoke_without_command=True, name='cert')
+@click.option('--name', default='default_cert', type=str, help='Name of certificate under which it will be represented in certificate manager.')
+@click.pass_context
+def cert(ctx, name):
+
+    ctx.obj['cert_name'] = name
+
+    if name in ctx.obj['cert_manager'] and ctx.invoked_subcommand is None:
+        click.echo(ctx.obj['cert_manager'].get_certificate(name=name))
+        return
+    elif name not in ctx.obj['cert_manager']:
+        certificate = cert_mgr.Certificate(name=name)
+        ca = ctx.obj['cert_manager'].add_certificate(name=name, certificate=certificate)
+        click.echo("Certificate with name {} added to certificate manager.".format(name))
+
+
+@cert.command(name='params')
+@click.option('--hostname', type=str, help='Hostname is used as issuer in case of self signed CA certificates.')
+@click.option('--key_size', default=2048, type=int, help='Key size.')
+@click.option('--common_name', type=str, help='Eg grpc.shell.sk')
+@click.option('--country', type=str, help='Two letter country identifier (UK, US, SK...).')
+@click.option('--state', type=str, help='Country region.')
+@click.option('--city', type=str, help='City name.')
+@click.option('--organization', type=str, help='Organization name, eg Vacica corp.')
+@click.option('--organizational_unit', type=str, help='Organization unit, eg Operations.')
+@click.option('--ip_addr', type=str, multiple=True, help='Repeatable field of ip adresses which will be injected to SubjectAlternativeName.')
+@click.option('--add_target_ip', is_flag=True, help='Automatically add target ip stored in context manager to list of IPs')
+@click.option('--email_id', type=str, help='rosomak@vacica.sk')
+@click.option('--serial_number', type=str, help='Unique identifier of device')
+@click.option('--not_valid_before_days', type=int, help='Lower boundry of certificate validity in days.')
+@click.option('--not_valid_after_days', type=int, help='Upper boundry of certificate validity in days.')
+@click.option('--certificate_dir', type=str, help='Absolute path to directory where certificates will be stored.')
+@click.pass_context
+def params(ctx, hostname, key_size, common_name, country, state, city, organization,
+         organizational_unit, ip_addr, add_target_ip, email_id, serial_number,
+         not_valid_before_days, not_valid_after_days,
+         certificate_dir):
+
+    name = ctx.obj['cert_name']
+    if add_target_ip:
+        ip_addr = ip_addr + (ctx.obj['context'].ip,)
+
+    ctx.obj['cert_manager'][name].certificate_params(
+                                hostname=hostname,
+                                key_size=key_size,
+                                common_name=common_name,
+                                country=country,
+                                state=state,
+                                city=city,
+                                organization=organization,
+                                organizational_unit=organizational_unit,
+                                ip_addr_list=ip_addr,
+                                email_id=email_id,
+                                serial_number=serial_number,
+                                not_valid_before_days=not_valid_before_days,
+                                not_valid_after_days=not_valid_after_days,
+                                certificate_dir=certificate_dir
+    )
+
+
+@cert.command(name='generate_csr')
+@click.pass_context
+def generate_csr(ctx):
+    name = ctx.obj['cert_name']
+
+    if ctx.obj['cert_manager'][name].generate_csr():
+        click.secho("Successfully generated csr for {}".format(name), fg="green")
+    else:
+        click.secho("Generating csr for {} failed".format(name), fg="red")
+
+
+@cert.command(name="create_ca")
+@click.pass_context
+def create_ca(ctx):
+    name = ctx.obj['cert_name']
+
+    if ctx.obj['cert_manager'][name].issue_ca():
+        click.secho("Successfully generated CA certificate and key for {}".format(name), fg="green")
+    else:
+        click.secho("Generating CA certificate and key for {} failed".format(name), fg="red")
+
+
+@cert.command(name="issue_certificate")
+@click.option('--ca_name', type=str, help='Name of certification authority loaded in shell.')
+@click.option('--ca_cert_file', type=click.File('rb'), help='Path to certification authority pem encoded cert file.')
+@click.option('--ca_key_file', type=click.File('rb'), help='Path to certification authority pem encoded key file.')
+@click.option('--csr_file', type=click.File('rb'), help='Optional, if certificate object doesnt contain csr pem text')
+@click.pass_context
+def issue_certificate(ctx, ca_name, ca_cert_file, ca_key_file, csr_file):
+    name = ctx.obj['cert_name']
+    if ca_name and (ca_cert_file or ca_key_file):
+        click.secho("ca_name and ca_cert_file+ca_key_file are mutually exclusive.")
+        return
+
+    if ca_name:
+        ca = ctx.obj['cert_manager'].get_certificate(name=ca_name)
+        ca_pem_cert = ca.pem_certificate
+        ca_pem_key = ca.pem_private_key
+    elif ca_cert_file and ca_key_file:
+        ca_pem_cert = ca_cert_file.read()
+        ca_pem_key = ca_key_file.read()
+    else:
+        click.secho("Either ca_name or tuple ca_cert_file and ca_key_file has to provided to issue certificate", fg="red")
+        return
+
+    if csr_file:
+        csr_pem = csr_file.read()
+    elif ctx.obj['cert_manager'].get_certificate(name=name).pem_csr:
+        csr_pem = ctx.obj['cert_manager'].get_certificate(name=name).pem_csr
+    else:
+        click.secho('This certificate object has to have pem_csr loaded or csr_file has to be provided', fg="red")
+        return
+
+    if ctx.obj['cert_manager'][name].issue_certificate(ca_pem_key = ca_pem_key, ca_pem_cert=ca_pem_cert, csr_pem=csr_pem):
+        click.secho("Successfully issued certificate for {}".format(name), fg="green")
+    else:
+        click.secho("Generating CA certificate and key for {} failed".format(name), fg="red")
+
+
+@cert.command(name='save')
+@click.argument('entity', type=str)
+@click.option('--path', type=str, help='Path where the entity will be saved.')
+@click.pass_context
+def save(ctx, entity, path):
+    """ ENTITY: start|stop|restart """
+    name = ctx.obj['cert_name']
+    ctx.obj['cert_manager'].get_certificate(name=name).save_pem(entity_type=entity, path=path)
+    click.secho("Saved {} to {}".format(entity, path), fg="green")
+
+
+@cert.command(name='remove')
+@click.pass_context
+def remove(ctx):
+    name = ctx.obj['cert_name']
+    ctx.obj['cert_manager'].remove_certificate(name=name)
+    click.secho("Removed certificate {}".format(name), fg="green")
+
 
 @grpc_shell.command(name='edit_config')
 @click.argument('config_file', type=click.Path())
@@ -1263,6 +1553,12 @@ def connect(ctx, ip, port, username, password, auth_type, root_cert, cert, key, 
         click.secho('Creating RibApi stub failed: {0}'.format(e), fg='red')
         ctx.obj['rib_fib_stub'] = None
 
+    try:
+        ctx.obj['gnoi_cert_stub'] = gnoi_certificates.create_stub(service='CertificateManagement', channel=ctx.obj['context'].channel)
+    except Exception as e:
+        click.secho('Creating CertificateManagement stub failed: {0}'.format(e), fg='red')
+        ctx.obj['gnoi_cert_stub'] = None
+
     # add option to skip service checks for users
     if not skip_connection:
         gnmi_rpc = gnmi.Capabilities(stub=ctx.obj['gnmi_stub'],
@@ -1298,8 +1594,18 @@ def connect(ctx, ip, port, username, password, auth_type, root_cert, cert, key, 
             rib_rpc.cancel()
         except:
             pass
-    rpc_types = ['gNMI.Get', 'gNMI.Set', 'gNMI.Subscribe', 'gNMI.Capabilities', 'RibApi.Modify', 'RibApi.GetVersion']
+    rpc_types = ['gNMI.Get',
+                 'gNMI.Set',
+                 'gNMI.Subscribe',
+                 'gNMI.Capabilities',
+                 'RibApi.Modify',
+                 'RibApi.GetVersion',
+                 'CertificateManagement.CanGenerateCSR',
+                 'CertificateManagement.Install',
+                 'CertificateManagement.Rotate']
     ctx.obj['manager'] = grpc_lib.RpcManager(rpc_types=rpc_types)
+
+    ctx.obj['cert_manager'] = cert_mgr.CertificateManager()
 
 
 @show.command(name='context')
@@ -1316,6 +1622,14 @@ def context(ctx):
 def manager(ctx):
     try:
         click.echo(ctx.obj['manager'])
+    except KeyError:
+        click.secho("No manager found, use 'connect' command to create one", fg='red')
+
+@show.command()
+@click.pass_context
+def certificates(ctx):
+    try:
+        click.echo(ctx.obj['cert_manager'])
     except KeyError:
         click.secho("No manager found, use 'connect' command to create one", fg='red')
 

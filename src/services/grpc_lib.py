@@ -249,7 +249,7 @@ class Rpc:
         # we will just flip consume flag here and feed work to queue
         # in case of streaming request, we dont need to restart the thread
         self.work_queue.put(time.time())
-        if self.worker and self.request_type == 'streaming':
+        if self.worker and self.request_type == 'streaming' and self.status != "finished":
             return
         self.worker = Thread(target=self.run)
         self.worker.daemon = True
@@ -271,8 +271,7 @@ class Rpc:
             self.status = 'erroneous'
             raise
         finally:
-            with self.work_queue.mutex:
-                self.work_queue.queue.clear()
+            self.work_queue = Queue()
             self.rpc_handler = None
         self.status = 'finished'
 

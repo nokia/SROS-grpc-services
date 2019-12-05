@@ -8,24 +8,29 @@ transported in plain-text, including username and password.
 
 <!-- MarkdownTOC -->
 
-- [Basic config](#basic-config)
-	- [Connection](#connection)
-	- [History](#history)
-	- [Settings](#settings)
-	- [Environment](#environment)
-- [Exec files](#exec-files)
-- [gNMI service](#gnmi-service)
-	- [Configuration mode limitations](#configuration-mode-limitations)
-	- [gNMI Set RPC](#gnmi-set-rpc)
-		- [Examples](#examples)
-	- [gNMI Get RPC](#gnmi-get-rpc)
-		- [Examples](#examples-1)
-	- [gNMI Subscribe RPC](#gnmi-subscribe-rpc)
-		- [Examples](#examples-2)
-- [RibApi Service](#ribapi-service)
-	- [Configuration mode limitations](#configuration-mode-limitations-1)
-	- [RibApi Modify RPC](#ribapi-modify-rpc)
-		- [Examples](#examples-3)
+  * [Basic config](#basic-config)
+    + [Connection](#connection)
+    + [History](#history)
+    + [Settings](#settings)
+    + [Environment](#environment)
+  * [Exec files](#exec-files)
+  * [gNMI service](#gnmi-service)
+    + [Configuration mode limitations](#configuration-mode-limitations)
+    + [gNMI Set RPC](#gnmi-set-rpc)
+      - [Examples](#examples)
+    + [gNMI Get RPC](#gnmi-get-rpc)
+      - [Examples](#examples-1)
+    + [gNMI Subscribe RPC](#gnmi-subscribe-rpc)
+      - [Examples](#examples-2)
+  * [RibApi Service](#ribapi-service)
+    + [Configuration mode limitations](#configuration-mode-limitations-1)
+    + [RibApi Modify RPC](#ribapi-modify-rpc)
+      - [Examples](#examples-3)
+  * [CertificateManagement service](#certificatemanagement-service)
+      - [Examples](#examples-4)
+        * [Install RPC with CSR from target](#install-rpc-with-csr-from-target)
+        * [Rotate RPC with CSR from target](#rotate-rpc-with-csr-from-target)
+        * [Locally created CSR](#locally-created-csr)
 
 <!-- /MarkdownTOC -->
 
@@ -363,3 +368,132 @@ Error:
 None
 ```
 
+## CertificateManagement service
+
+:heavy_exclamation_mark: :skull: None of the certificates, certificate authorities and generally antyhing that is provided by this tool or described in this document shouldnt be used in production enviroment and shouldnt be considered as safe. Certificate provisioning should always happen in already secured network, ideally on secured connection. :skull: :heavy_exclamation_mark:
+
+
+CertificateManagement service provides Rotate, Install, GetCertificates (not implemented yet), RevokeCertificates (not implemented yet) and CanGenerateCSR RPCs described in [cert.proto](https://github.com/openconfig/gnoi/blob/master/cert/cert.proto). Some additional documents can be found in [gnoi docs](https://github.com/openconfig/gnoi/tree/master/docs). This shell works exclusively with [x509 certificates](https://tools.ietf.org/html/rfc5280) and uses PEM for persisent storage and exchange of information between objects within shell.
+
+Rotate and Install can both manipulate certificates on target, detailed description of message flows is in proto file. TL;DR version:
+ - Install is used to push new certificates to target, the RPC fails in case certificate with identical id already exists.
+ - Rotate is used to replace existing certificates on target, the RPC failn in case certificate with identiacal id does not already exists.
+
+Besides classic RPC commands, shell introduces certificate manager, which holds certificate objects. These objects provides interface to generate and store CSR, certification authories and certificates itself. All currently loaded cert objects can be viewed by ```show certificates``` command.
+
+#### Examples
+Certificate manager is available via cert command. In each scenario we will need to create certification(CA) authority to sign and later verify our certificates.
+
+##### Install RPC with CSR from target
+Simple CA can be created and persitently saved with commands:
+```
+cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca create_ca
+cert --name ca save certificate --path /tmp/ca_test.pem
+cert --name ca save key --path /tmp/ca_test.key
+```
+
+Further scenarios revolve around abilty of target to genenerate CSR. SROS has this capabaility, so we can create another cert object, which will hold some basic information send in the RPC. The same object will be later used to sign the certificate and hold the pem text which we can load to target:
+```
+cert --name test_cert_install params --hostname test.vacica.com --common_name test.vacica.com --organization "Vacica Inc." --organizational_unit "RnD" --country SK --state SK --city "Bratislava" --not_valid_before_days 1 --not_valid_after_days 30  --email_id test-vacica@vacica.com --add_target_ip
+```
+Special switch ```--add_target_ip``` will automatically put IP address of target to list of addresses in certificate. Additional IPs can be specified by repeated option ```--ip_addr```, but SROS implementation of CSRParams message can currently parse only one address per certificate.
+
+Now we can instantiate install RPC and ask target to provide CSR based on information in cert object created in previous step:
+```
+gnoi_cert --name install_rpc_test --cert_object test_cert_install --rpc install
+gnoi_cert --name install_rpc_test generate_csr
+```
+
+In case the RPC was successful, CSR is loaded in cert object and ready to be signed by CA created if first step:
+```
+cert --name test_cert_install issue_certificate --ca_name ca
+```
+
+In last step, we need to upload the certificate to target and just in case we can also persitently store it on disk:
+```
+gnoi_cert --name install_rpc_test load_certificate
+cert --name test_cert_install save csr --path /tmp/csr_test_cert_install.pem
+cert --name test_cert_install save certificate --path /tmp/cert_test_cert_install.pem
+```
+
+The certificate is now available on target, you can check wheter it is present in system-pki directory on target compact flash:
+```
+*A:Dut-C# file dir cf1:/system-pki/ 
+
+Volume in drive cf1 on slot A is CF1.
+
+Volume in drive cf1 on slot A is formatted as FAT32
+
+Directory of cf1:\system-pki\
+
+12/05/2019  04:08a      <DIR>          ./
+12/05/2019  04:08a      <DIR>          ../
+12/05/2019  01:00p                 901 install_rpc_test.crt
+12/05/2019  01:00p                1255 install_rpc_test.key
+               2 File(s)                   2156 bytes.
+               2 Dir(s)              8573140992 bytes free.
+
+```
+
+
+##### Rotate RPC with CSR from target
+Commands for Rotate RPC are very similiar to install, for demo pursposes we will create the same CA, upload one certificate to target via Install RPC and then rotate it via Rotate RPC with same certificate id:
+
+CA and initial install:
+```
+cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca create_ca
+cert --name ca save certificate --path /home/matibens/certs/ca_test.pem
+cert --name ca save key --path /home/matibens/certs/ca_test.key
+
+cert --name test_cert_rotate params --hostname test.vacica.com --common_name test.vacica.com --organization "Vacica Inc." --organizational_unit "RnD" --country SK --state SK --city "Bratislava" --not_valid_before_days 1 --not_valid_after_days 30  --email_id test-vacica@vacica.com --add_target_ip
+gnoi_cert --name rotate_rpc_test --cert_object test_cert_rotate --rpc install
+gnoi_cert --name rotate_rpc_test generate_csr
+cert --name test_cert_rotate issue_certificate --ca_name ca
+gnoi_cert --name rotate_rpc_test load_certificate
+cert --name test_cert_rotate save csr --path /home/matibens/certs/csr_test_cert_rotate.pem
+cert --name test_cert_rotate save certificate --path /home/matibens/certs/cert_test_cert_rotate.pem
+```
+
+Destroy the original cert object and rpc:
+```
+gnoi_cert --name rotate_rpc_test destroy
+cert --name test_cert_rotate remove
+```
+
+And create Rotate RPC with identical certificate id (```gnoi_cert --name```), note the extra finalize call at the end of the sequence required by service:
+```
+cert --name test_cert_rotate params --hostname test.vacica.com --common_name test.vacica.com --organization "Possum Inc." --organizational_unit "RnD" --country SK --state SK --city "Bratislava" --not_valid_before_days 1 --not_valid_after_days 30  --email_id test-vacica@vacica.com --add_target_ip
+gnoi_cert --name rotate_rpc_test --cert_object test_cert_rotate --rpc rotate
+gnoi_cert --name rotate_rpc_test generate_csr
+cert --name test_cert_rotate issue_certificate --ca_name ca
+gnoi_cert --name rotate_rpc_test load_certificate
+gnoi_cert --name rotate_rpc_test finalize
+```
+
+##### Locally created CSR
+CSR can be also created locally by cert manager, so we can skip one step in communication with target and use ```key_pair``` message from service to provide private and public key from cer object.
+
+Obligatory CA:
+```
+cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca create_ca
+cert --name ca save certificate --path /home/matibens/certs/ca_test.pem
+cert --name ca save key --path /home/matibens/certs/ca_test.key
+```
+
+As in previous examples, create cert object, but this time call generate_csr within the cert manager:
+```
+cert --name test_cert params --hostname test.vacica.com --common_name test.vacica.com --organization "Vacica Inc." --organizational_unit "RnD" --country SK --state SK --city "Bratislava" --not_valid_before_days 1 --not_valid_after_days 30  --email_id test-vacica@vacica.com --add_target_ip
+cert --name test_cert generate_csr
+cert --name test_cert issue_certificate --ca_name ca
+```
+
+And just upload the certificate with ```--local_keys``` switch:
+```
+gnoi_cert --name install_rpc_test --cert_object test_cert --rpc install
+gnoi_cert --name install_rpc_test load_certificate --local_keys
+```
+
+Done, dont hesitate to raise issue in case you encounter any problem.

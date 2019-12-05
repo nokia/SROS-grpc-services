@@ -19,7 +19,8 @@ setup(
         'gnureadline',
         'grpcio',
         'grpcio-tools',
-        'protobuf'
+        'protobuf',
+        'cryptography'
     ],
     entry_points= {
         'console_scripts': ['grpc_shell = shell.grpc_shell:main'
