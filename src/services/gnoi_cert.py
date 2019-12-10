@@ -19,6 +19,7 @@ import grpc_lib
 from protos_gen import cert_pb2 as cert
 from protos_gen import cert_pb2_grpc as cert_stub
 
+from google.protobuf import json_format
 from logging import getLogger
 import base64
 
@@ -63,6 +64,52 @@ class CanGenerateCSR(grpc_lib.Rpc):
             certificate_type=self.certificate_type,
             key_size=self.key_size,
         )
+
+    def receiver(self):
+        self.rpc_handler = self.stub_method.future(
+            self.generator(), metadata=self.metadata, timeout=self._timeout
+        )
+        self.response_processor(self.rpc_handler.result())
+        self.status = "finished"
+        self.work_queue.task_done()
+
+    def default_response_processor(self, response=None):
+        self.response = response
+
+
+class GetCertificates(grpc_lib.Rpc):
+    def __init__(self, *args, **kwargs):
+
+        grpc_lib.Rpc.__init__(self, *args, **kwargs)
+
+        self.processed_request = []
+        self.stub_method = self.stub.GetCertificates
+
+        self.response_processor = self.default_response_processor
+        self.request_type = "unary"
+
+        self.response = None
+
+    def __str__(self):
+        response = (
+            json_format.MessageToJson(
+                self.response,
+                including_default_value_fields=True,
+                preserving_proto_field_name=True,
+            )
+            if self.response
+            else None
+        )
+        return ("Certificates:\n{response}\n\n" "ERROR:\n{error}\n").format(
+            request=self.request, response=response, error=self.error
+        )
+
+    def generator(self):
+        return self.request
+
+    @property
+    def request(self):
+        return cert.GetCertificatesRequest()
 
     def receiver(self):
         self.rpc_handler = self.stub_method.future(

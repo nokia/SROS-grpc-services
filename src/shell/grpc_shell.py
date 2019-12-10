@@ -1290,13 +1290,76 @@ def execute(ctx, process, timeout):
             click.secho('\nError while executing rpc: {0}\n'.format(e))
 
 
+@grpc_shell.group(invoke_without_command=True, name='gnoi_get_certificates')
+@click.option('--name', default='default_can_generate_csr', type=str, help='RPCs given name - used for managing RPCs in this client')
+@click.option('--paging', is_flag=True, help='Use pager inherited from shell in case there is long text to display.')
+@click.pass_context
+def gnoi_get_certificates(ctx, name, paging):
+    '''
+        gnoi.certificate GetCertificates 
+    '''
+    if ctx.invoked_subcommand != 'help':
+        try:
+            rpc_type = 'CertificateManagement.GetCertificates'
+            if name in ctx.obj['manager'].rpcs[rpc_type]:
+                if ctx.invoked_subcommand is None:
+                    if paging:
+                        click.echo_via_pager(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+                    else:
+                        click.echo(ctx.obj['manager'].get_rpc(type=rpc_type, name=name))
+
+            else:
+                click.secho('Rpc with name \'{name}\' doesnt exists, adding one to rpc manager'.format(name=name), fg='yellow')
+                ctx.obj['manager'].rpcs[rpc_type][name] = gnoi_certificates.GetCertificates(
+                                                                        stub=ctx.obj['gnoi_cert_stub'],
+                                                                        metadata=ctx.obj['context'].metadata,
+                                                                        name=name)
+            ctx.obj['RPC_NAME'] = name
+            ctx.obj['RPC_TYPE'] = rpc_type
+        except KeyError as e:
+            click.secho('\nYou have to create at least one connection before creating RPCs\n', fg='red')
+            raise
+            sys.exit()
+
+
+@gnoi_get_certificates.command(name='execute')
+@click.option('--process', default='blocking', type=click.Choice(['blocking', 'non-blocking']),
+              help=('Run RPC. blocking process waits for rpc to finish. non-blocking returns '
+                    'immediately.'))
+@click.option('--timeout', default=300, type=int,
+              help=('number of seconds to wait in case of blocking call, '
+                    'value -1 means no timeout'))
+@click.pass_context
+def execute(ctx, process, timeout):
+    '''
+        Executes rpc
+    '''
+    ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].execute()
+
+    if process == 'blocking':
+        if timeout == -1:
+            timeout = None
+        try:
+            ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.join(timeout)
+            if ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].worker.is_alive():
+                click.secho('\nMax wait limit {0}s exceeded\n'.format(timeout), fg='red')
+            else:
+                err = ctx.obj['manager'].rpcs[ctx.obj['RPC_TYPE']][ctx.obj['RPC_NAME']].error
+                if err:
+                    click.secho('Rpc finished with error:\n{0}'.format(err), fg='red')
+                else:
+                    click.echo(ctx.obj['manager'].get_rpc(type=ctx.obj['RPC_TYPE'], name=ctx.obj['RPC_NAME']))
+                    click.secho('Rpc finished, call \'gnoi_get_certificates --name {0}\' to show result'.format(ctx.obj['RPC_NAME']), fg='green')
+        except Exception as e:
+            click.secho('\nError while executing rpc: {0}\n'.format(e))
+
 
 @grpc_shell.group(invoke_without_command=True, name='gnoi_cert')
 @click.option('--name', required=True, type=str, help='RPCs given name - used for managing RPCs in this client and as certificate id')
 @click.option('--cert_object', type=str, help='name of associated cert object from cert manager')
 @click.option('--paging', is_flag=True, help='Use pager inherited from shell in case there is long text to display.')
 @click.option('--timeout', default=240, type=int, help='name of associated cert object from cert manager')
-@click.option('--rpc', type=click.Choice(['install', 'rotate']), help='install or rotate')
+@click.option('--rpc', default = "install", type=click.Choice(['install', 'rotate']), help='install or rotate')
 @click.pass_context
 def gnoi_cert(ctx, name, cert_object, timeout, paging, rpc):
     '''
@@ -1304,7 +1367,8 @@ def gnoi_cert(ctx, name, cert_object, timeout, paging, rpc):
     '''
     if ctx.invoked_subcommand != 'help':
         try:
-            rpc_type = 'CertificateManagement.Install'
+            rpc_type = "CertificateManagement.Cert"
+
             if name in ctx.obj['manager'].rpcs[rpc_type]:
                 if ctx.invoked_subcommand is None:
                     if paging:
@@ -1601,8 +1665,8 @@ def connect(ctx, ip, port, username, password, auth_type, root_cert, cert, key, 
                  'RibApi.Modify',
                  'RibApi.GetVersion',
                  'CertificateManagement.CanGenerateCSR',
-                 'CertificateManagement.Install',
-                 'CertificateManagement.Rotate']
+                 'CertificateManagement.GetCertificates',
+                 'CertificateManagement.Cert']
     ctx.obj['manager'] = grpc_lib.RpcManager(rpc_types=rpc_types)
 
     ctx.obj['cert_manager'] = cert_mgr.CertificateManager()

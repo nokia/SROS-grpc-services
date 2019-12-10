@@ -373,7 +373,7 @@ None
 :heavy_exclamation_mark: :skull: None of the certificates, certificate authorities and generally antyhing that is provided by this tool or described in this document shouldnt be used in production enviroment and shouldnt be considered as safe. Certificate provisioning should always happen in already secured network, ideally on secured connection. :skull: :heavy_exclamation_mark:
 
 
-CertificateManagement service provides Rotate, Install, GetCertificates (not implemented yet), RevokeCertificates (not implemented yet) and CanGenerateCSR RPCs described in [cert.proto](https://github.com/openconfig/gnoi/blob/master/cert/cert.proto). Some additional documents can be found in [gnoi docs](https://github.com/openconfig/gnoi/tree/master/docs). This shell works exclusively with [x509 certificates](https://tools.ietf.org/html/rfc5280) and uses PEM for persisent storage and exchange of information between objects within shell.
+CertificateManagement service provides Rotate, Install, GetCertificates, RevokeCertificates (not implemented yet) and CanGenerateCSR RPCs described in [cert.proto](https://github.com/openconfig/gnoi/blob/master/cert/cert.proto). Some additional documents can be found in [gnoi docs](https://github.com/openconfig/gnoi/tree/master/docs). This shell works exclusively with [x509 certificates](https://tools.ietf.org/html/rfc5280) and uses PEM for persisent storage and exchange of information between objects within shell.
 
 Rotate and Install can both manipulate certificates on target, detailed description of message flows is in proto file. TL;DR version:
  - Install is used to push new certificates to target, the RPC fails in case certificate with identical id already exists.
@@ -446,6 +446,38 @@ Directory of cf1:\system-pki\
 
 ```
 
+or via GetCertificates RPC:
+```
+gnoi_get_certificates execute
+Rpc with name 'default_can_generate_csr' doesnt exists, adding one to rpc manager
+Certificates:
+{
+  "certificate_info": [
+    {
+      "certificate_id": "rotate_rpc_test", 
+      "endpoints": [], 
+      "certificate": {
+        "type": "CT_X509", 
+        "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURRVENDQWltZ0F3SUJBZ0lRUjRISFA2RGVTdTJZdm55RnRsQVpoakFOQmdrcWhraUc5dzBCQVFzRkFEQVAKTVEwd0N3WURWUVFEREFST2IyNWxNQjRYRFRFNU1USXdPVEV4TkRnek1Wb1hEVEl3TURFd09URXhORGd6TVZvdwpnWlF4R0RBV0JnTlZCQU1URDNSbGMzUXVkbUZqYVdOaExtTnZiVEVMTUFrR0ExVUVCaE1DVTBzeEN6QUpCZ05WCkJBZ1RBbE5MTVJNd0VRWURWUVFIRXdwQ2NtRjBhWE5zWVhaaE1SUXdFZ1lEVlFRS0V3dFFiM056ZFcwZ1NXNWoKTGpFTU1Bb0dBMVVFQ3hNRFVtNUVNU1V3SXdZSktvWklodmNOQVFrQkZoWjBaWE4wTFhaaFkybGpZVUIyWVdOcApZMkV1WTI5dE1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBMWtKdlpjMXlibmcxCm1sUWptd2FzWHMxVGVVQ2JwTjZmY2NzVURGS2htcU5UNmR0SzFqTU9Cd2h3aEZwdnh4dGgrRk5RbUIwcHI2RGwKODRueDZ3aWxMSWNhT3hoek9zSG1qL0tCZkxocXdqckI1aUV2MlZkNXRMd1llUmZVbzlHc0hMdEVmalhtMWxSOAprcUVTSlhkYjRGV3ZkTlNZRlV0c0RaTGlpVG9UOEg3MGlMTWZKcEJiMCt6QkJNL2UvNnFIMVhFTEdTR0hBU3JBClRGcGNZQjBTb20wUkIyemx3MUVtdTI4ZkZJQTBhYSttMmdybStHbVd0cWpWZzJXb1RXbzFQdXFxNEFNcDk5N3gKMmhVbFFvMzU2cDMwd0Jjd1QxYXRRR0YzRzBka2lUZ3Y4K1g3NWhNbUVvYzk4M281R3c4cnVVZDVxRWozT2p6QQpMOGYzcGQ2S2Z3SURBUUFCb3hNd0VUQVBCZ05WSFJFRUNEQUdod1RBcUZzRE1BMEdDU3FHU0liM0RRRUJDd1VBCkE0SUJBUUEydWRFeG14dDM3eTBjY1BPd3pNdDE2Mjc3S1FEM2hYaDZhdURyY2R6RXMvNVN0d2x1VXpOYTQ3NFAKR0tmTUdCOVRZU0ZjcU1ORzhMdVo2WkdmQWRKU0tBaUNNbUNJUDcvdWdaTlVGU3FXMDBYMFJQYVo0ZW9haU9GRgppTm0xL0JyR250dTNkYnY2MUFqa2lVMlJUYUJwKzhXQjhtbkJKUUR3ejRJK0h5WkUxbTFEMDlqQXY3WWFMNnhRCjI3TmxaU2NZcXFJaENVT0wvdS9sR0ZJQVRvZVU0eCtYRlVLRUpnZ2xUZmQ4TUhRUkpmMkRjOGo2WmMvN1R6YVIKNlVYUmNQaXd2bmhibHFTbzlveVU5SXMwSzRZTERTZFRxdEpqaTlXVkJyczdLM3U2ckYxdWxZYkhRV1BKdzQwMApVTzFKdGN3T2lVVHpoTHpPQm9uckkxUXY2RGlECi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+      }, 
+      "modification_time": "1575974914000000000"
+    }, 
+    {
+      "certificate_id": "install_rpc_test", 
+      "endpoints": [], 
+      "certificate": {
+        "type": "CT_X509", 
+        "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURRakNDQWlxZ0F3SUJBZ0lSQU4xcUd3OHdDa2NacUxzd0MwS2llbmN3RFFZSktvWklodmNOQVFFTEJRQXcKRHpFTk1Bc0dBMVVFQXd3RVRtOXVaVEFlRncweE9URXlNRGt4TVRRNU1ESmFGdzB5TURBeE1Ea3hNVFE1TURKYQpNSUdVTVJnd0ZnWURWUVFERXc5MFpYTjBMblpoWTJsallTNWpiMjB4Q3pBSkJnTlZCQVlUQWxOTE1Rc3dDUVlEClZRUUlFd0pUU3pFVE1CRUdBMVVFQnhNS1FuSmhkR2x6YkdGMllURVVNQklHQTFVRUNoTUxWbUZqYVdOaElFbHUKWXk0eEREQUtCZ05WQkFzVEExSnVSREVsTUNNR0NTcUdTSWIzRFFFSkFSWVdkR1Z6ZEMxMllXTnBZMkZBZG1GagphV05oTG1OdmJUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU5kQnA1SlBzWnFQClVrUTc2NHhyVm1sd0VrRzAycHpUampRR1dDZUdycUhoWVdPa3pRWWpLV29RNVVlL2tCWjhQNnRtS0Rpeld2RzIKZmVYZHJ3R2kyK1RPOXM5Q1JMeHJLbHdaZmV5SGwvSytTR2F6NWZlUlBiSGFKd1RTMzI3NXFxMUpWbkZWS0ZvQwozUHVaRFNISThXUlYyQUc5RUh5eFprY2dxVXpPdFVTaURFMWZUajZnaUVOUFdONDhBOXlFVDBVUmcvSWIzZHNRClJFdzdZc0FranRvVk1rSnJwUTd6ZHNqaHFJYU01dm1pVzV6dFVROElYZ052c01ZeDVDMEdBajI4SFpSaVAvSnYKTXllQkJsYlRObjlkZ096SkhjdWtZZUFrOUt4RVkrOFRVOGRhQ21MYTJLS0tUZUZscENJbUpmTElPWmFYNG9rNApxUENmRVljUjZuTUNBd0VBQWFNVE1CRXdEd1lEVlIwUkJBZ3dCb2NFd0toYkF6QU5CZ2txaGtpRzl3MEJBUXNGCkFBT0NBUUVBRTVxSlRPSWU5Z3JvY1NxRDBsalYrVUtqQmhzQU9DdHRMbTd0eHMzNEhvV25adVBRNWdmNlRXTlIKVmYrK2U4UFhXeDFnMEk4VFJ1QzZaQnBlaDFseWM3dytQakJiTHNGdk9Qc1dyL1VUVDVhRDM3aFNtajc2K2kwYwpsMVBhOEdWVlBva1E3YXBmTm91Vk5qZ0doL2NpcGJiSG9IR29nZjVTcjRrVkt4ZUVXWlRiM1FoR29tdnZPYmxiCnpFRm5xbmtROWcwWGhIbkFmZ0V6akJoaVNQdUxod1pEdmh2Y3hWWWUyRldnUFNubk44MFhvZ3JmOWRUNXN2djUKc3laSFlzYmhQZnRLMkhONHNWMm1odGVidnFmOWJwMjZzaXJRUGlLOXlaNjdycTdqbE9mMGkrYWR4aXhNT0l0eQpoRWxlMVlhZlh6cHpyYmdNbk5NbHJVTXRocGRKYkE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+      }, 
+      "modification_time": "1575974950000000000"
+    }
+  ]
+}
+
+ERROR:
+None
+
+```
 
 ##### Rotate RPC with CSR from target
 Commands for Rotate RPC are very similiar to install, for demo pursposes we will create the same CA, upload one certificate to target via Install RPC and then rotate it via Rotate RPC with same certificate id:
