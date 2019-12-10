@@ -495,7 +495,7 @@ Commands for Rotate RPC are very similiar to install, for demo pursposes we will
 
 CA and initial install:
 ```
-cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca params --hostname vacica.com --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
 cert --name ca create_ca
 cert --name ca save certificate --path /home/matibens/certs/ca_test.pem
 cert --name ca save key --path /home/matibens/certs/ca_test.key
@@ -530,7 +530,7 @@ CSR can be also created locally by cert manager, so we can skip one step in comm
 
 Obligatory CA:
 ```
-cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca params --hostname vacica.com --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
 cert --name ca create_ca
 cert --name ca save certificate --path /home/matibens/certs/ca_test.pem
 cert --name ca save key --path /home/matibens/certs/ca_test.key
