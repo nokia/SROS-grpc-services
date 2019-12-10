@@ -112,7 +112,7 @@ class Channel:
                 '   root_cert: {root_cert}\n'
                 '   cert: {cert}\n'
                 '   key: {key}\n'
-                '   auth_type: {auth_type}\n'
+                '   transport: {transport}\n'
                 '   compression: {compression}\n'
                 '   try_to_connect: {try_to_connect}\n'
                 '   channel_state: {channel_state}').format(
@@ -122,7 +122,7 @@ class Channel:
                         root_cert=self.root_cert,
                         cert=self.cert,
                         key=self.key,
-                        auth_type=self.auth_type,
+                        transport=self.transport,
                         compression=self.compression,
                         try_to_connect=self.try_to_connect,
                         channel_state=self.channel_state)

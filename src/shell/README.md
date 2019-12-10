@@ -52,7 +52,7 @@ transport: unsecure
 compression: deflate
 ```
 
-And for secure connection:
+And for secure connection with mutual authentication:
 ```
 [context]
 ip: 192.168.90.103
@@ -62,9 +62,20 @@ root_cert: CAcert_l1.pem
 cert: cert_l1.pem
 key: servkey_l1.pem
 transport: secure
-auth_type: mutual
 compression: deflate
 ```
+
+In case only target is being authenticated on tls layer, you can just ommit cert and key options:
+```
+[context]
+ip: 192.168.90.103
+port: 57400
+username: admin
+root_cert: CAcert_l1.pem
+transport: secure
+compression: deflate
+```
+
 
 All of these paramaters can be overriden by options in connect command during interactive session.
 
@@ -397,7 +408,7 @@ Certificate manager is available via cert command. In each scenario we will need
 ##### Install RPC with CSR from target
 Simple CA can be created and persitently saved with commands:
 ```
-cert --name ca params --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
+cert --name ca params --hostname vacica.com --common_name ca.vacica.com --organization "Vacica Inc." --not_valid_before_days 1 --not_valid_after_days 30  --add_target_ip
 cert --name ca create_ca
 cert --name ca save certificate --path /tmp/ca_test.pem
 cert --name ca save key --path /tmp/ca_test.key

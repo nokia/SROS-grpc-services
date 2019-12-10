@@ -301,7 +301,7 @@ class Certificate:
 
         cert_builder = x509.CertificateBuilder(
             public_key=key.public_key(),
-            issuer_name=issuer_name,
+            issuer_name=self.subject_name,
             subject_name=self.subject_name,
             serial_number=self.serial_num,
             not_valid_before=self.not_valid_before_date,
