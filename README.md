@@ -174,7 +174,7 @@ Grpc can be used with TLS server for secure transport in both server-side and mu
 
 #### Certificate importing
 
-Creating certificates is out of scope of this document, but all the information can be found in openssl documentation.
+Creating certificates is out of scope of this document, but all the information can be found in openssl documentation. It is possible to use a self-signed certificate. It must include the v3 extention *basicConstraints=CA:TRUE*.
 
 For server side authentication we will need certificate for server signed by certification authority (`cert_l1.crt`), and servers private key which is used to encrypt the data communication (`servkey_l1.crt`).
 
