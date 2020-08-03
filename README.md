@@ -400,3 +400,7 @@ md-cli:
 gNMI:
 /network-instances/network-instance
 ```
+
+## License
+
+This project is licensed under the BSD-3-Clause license - see the [LICENSE](https://github.com/nokia/SROS-grpc-services/blob/master/LICENSE).
